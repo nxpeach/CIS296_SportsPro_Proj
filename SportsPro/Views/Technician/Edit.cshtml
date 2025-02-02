@@ -1,5 +1,34 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Technician
 @{
+    string title = ViewBag.Action + " Technician";
 }
+
+<h2>@title</h2>
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="TechnicianID" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="row">
+
+        <div class="form-group col-md-6">
+            <label asp-for="Name">Name</label>
+            <input asp-for="Name" class="form-control" />
+        </div>
+
+        <div class="form-group col-md-6">
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+
+        <div class="form-group col-md-6">
+            <label asp-for="Phone">Phone</label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        
+    </div>
+
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">@ViewBag.Action</button>
+        <a asp-controller="Technician" asp-action="List" class="btn btn-primary">Cancel</a>
+    </div>
+
+</form>
