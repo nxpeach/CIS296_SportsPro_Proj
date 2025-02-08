@@ -66,6 +66,26 @@ namespace SportsPro.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var incident = context.Incidents
+                           .Include(i => i.Customer)  // Ensure that you are including the Customer data
+                           .FirstOrDefault(i => i.IncidentID == id);
+
+           
+
+            return View(incident);
+        }
+
+        [HttpPost]
+        public IActionResult Delete(Incident incident)
+        {
+            context.Incidents.Remove(incident);
+            context.SaveChanges();
+            return RedirectToAction("List");
+        }
+
         public IActionResult List()
         {
             var incidents = context.Incidents.Include(i => i.Customer).
