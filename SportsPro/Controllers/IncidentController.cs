@@ -23,7 +23,7 @@ namespace SportsPro.Controllers
             ViewBag.Customers = context.Customers.OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList();
             ViewBag.Products = context.Products.OrderBy(p => p.Name).ToList();
             ViewBag.Technicians = context.Technicians.OrderBy(t => t.Name).ToList();
-            return View("Edit", new Incident());
+            return View("Edit", new Incident { DateOpened = null });
         }
 
         [HttpGet]
