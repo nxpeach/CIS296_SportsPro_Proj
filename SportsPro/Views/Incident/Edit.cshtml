@@ -1,5 +1,70 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Incident
 @{
+    string title = ViewBag.Action + " Incident";
 }
+
+<h2>@title</h2>
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IncidentID" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="row">
+
+        <div class="form-group">
+            <label asp-for="CustomerID">Customer</label>
+            <select asp-for="CustomerID" class="form-control">
+                @foreach (Customer c in ViewBag.Customers)
+                {
+                    <option value="@c.CustomerID">@c.FullName</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ProductID">Product</label>
+            <select asp-for="ProductID" class="form-control">
+                @foreach (Product p in ViewBag.Products)
+                {
+                    <option value="@p.ProductID">@p.Name</option>
+                }
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="Title">Title</label>
+            <input asp-for="Title" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description">Description</label>
+            <input asp-for="Description" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TechnicianID">Technician</label>
+            <select asp-for="TechnicianID" class="form-control">
+                <option value="">Assign a technician...</option>
+                @foreach (Technician t in ViewBag.Technicians)
+                {
+                    <option value="@t.TechnicianID">@t.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DateOpened">Date Opened</label>
+            <input asp-for="DateOpened" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DateClosed">Date Closed</label>
+            <input asp-for="DateClosed" class="form-control" />
+        </div>
+
+    </div>
+
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">@ViewBag.Action</button>
+        <a asp-controller="Incident" asp-action="List" class="btn btn-primary">Cancel</a>
+    </div>
+
+</form>
