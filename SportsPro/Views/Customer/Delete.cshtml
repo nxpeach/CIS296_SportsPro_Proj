@@ -1,0 +1,10 @@
+﻿@model SportsPro.Models.Customer
+
+<h2>Delete Customer</h2>
+
+<p>Are you sure you want to delete @Model.FullName?</p>
+
+<form asp-action="DeleteConfirmed" method="post" asp-route-id="@Model.CustomerID">
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="List" class="btn btn-secondary">Cancel</a>
+</form>
