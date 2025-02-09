@@ -1,8 +1,12 @@
-﻿@model SportsPro.Models.Customer
+﻿@model Customer
 
-<h2>Delete Customer</h2>
+@{
+    ViewBag.Title = "Delete Customer";
+}
 
-<p>Are you sure you want to delete @Model.FullName?</p>
+<h2>Confirm Deletion</h2>
+
+<h3>Are you sure you want to delete @Model.FullName?</h3>
 
 <form asp-action="DeleteConfirmed" method="post" asp-route-id="@Model.CustomerID">
     <button type="submit" class="btn btn-danger">Delete</button>

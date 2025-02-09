@@ -1,18 +1,15 @@
 ﻿@model Incident
+
 @{
     ViewBag.Title = "Delete Incident";
 }
 
 <h2>Confirm Deletion</h2>
-<h3>Are you sure you want to delete <br />
-    @Model.Customer.FullName's incident, "@Model.Title"?
-</h3>
 
-<div>
+<h3>Are you sure you want to delete @Model.Customer.FullName's incident, "@Model.Title"?</h3>
 
-    <form asp-action="Delete" method="post">
-        <input type="hidden" asp-for="IncidentID" />
-        <button type="submit" class="btn btn-danger">Delete</button>
-        <a asp-action="List" class="btn btn-primary">Cancel</a>
-    </form>
-</div>
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="IncidentID" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="List" class="btn btn-primary">Cancel</a>
+</form>
