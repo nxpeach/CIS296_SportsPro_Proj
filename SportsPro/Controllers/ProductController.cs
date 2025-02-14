@@ -71,7 +71,8 @@ namespace SportsPro.Controllers
 			return RedirectToAction("List");
 		}
 
-		public IActionResult List()
+        [Route("products")]
+        public IActionResult List()
 		{
 			var products = context.Products.ToList();
 			return View(products);

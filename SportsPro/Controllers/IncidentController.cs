@@ -86,6 +86,7 @@ namespace SportsPro.Controllers
             return RedirectToAction("List");
         }
 
+        [Route("/incidents")]
         public IActionResult List()
         {
             var incidents = context.Incidents.Include(i => i.Customer).
