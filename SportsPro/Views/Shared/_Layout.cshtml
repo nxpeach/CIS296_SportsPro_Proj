@@ -32,19 +32,19 @@
                       @(controller == "Home" && action == "Index" ? "active" : "")"
                            asp-controller="Home" asp-action="Index">Home</a>
                         <a class="nav-item nav-link
-                      @(controller == "Product" && action == "List" ? "active" : "")"
+                      @(controller == "Product" ? "active" : "")"
                            asp-controller="Product" asp-action="List">Products</a>
                         <a class="nav-item nav-link       
-                      @(controller == "Technician" && action == "List" ? "active" : "")"
+                      @(controller == "Technician" ? "active" : "")"
                         asp-controller="Technician" asp-action="List">Technicians</a>
                         <a class="nav-item nav-link
-                      @(controller == "Customer" && action == "List" ? "active" : "")"
+                      @(controller == "Customer" ? "active" : "")"
                            asp-controller="Customer" asp-action="List">Customers</a>
                         <a class="nav-item nav-link
-                      @(controller == "Incident" && action == "List" ? "active" : "")"
+                      @(controller == "Incident" ? "active" : "")"
                            asp-controller="Incident" asp-action="List">Incidents</a>
                         <a class="nav-item nav-link
-                      @(controller == "Registration" && action == "List" ? "active" : "")"
+                      @(controller == "Registration" ? "active" : "")"
                            asp-controller="Registration" asp-action="List">Registrations</a>
             </div>
             <div class="navbar-nav ms-auto">

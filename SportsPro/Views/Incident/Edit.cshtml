@@ -11,23 +11,21 @@
 
         <div class="form-group">
             <label asp-for="CustomerID">Customer</label>
-            <select asp-for="CustomerID" class="form-control">
+            <select asp-for="CustomerID"
+                    asp-items="@(new SelectList(ViewBag.Customers,
+                                 "CustomerID", "FullName"))"
+                    class="form-select">
                 <option value="">Select a customer...</option>
-                @foreach (Customer c in ViewBag.Customers)
-                {
-                    <option value="@c.CustomerID">@c.FullName</option>
-                }
             </select>
         </div>
 
         <div class="form-group">
             <label asp-for="ProductID">Product</label>
-            <select asp-for="ProductID" class="form-control">
+            <select asp-for="ProductID"
+                    asp-items="@(new SelectList(ViewBag.Products,
+                                 "ProductID", "Name"))"
+                    class="form-select">
                 <option value="">Select a product...</option>
-                @foreach (Product p in ViewBag.Products)
-                {
-                    <option value="@p.ProductID">@p.Name</option>
-                }
             </select>
         </div>
         
@@ -43,12 +41,11 @@
 
         <div class="form-group">
             <label asp-for="TechnicianID">Technician</label>
-            <select asp-for="TechnicianID" class="form-control">
-                <option value="">Assign a technician...</option>
-                @foreach (Technician t in ViewBag.Technicians)
-                {
-                    <option value="@t.TechnicianID">@t.Name</option>
-                }
+            <select asp-for="TechnicianID"
+                    asp-items="@(new SelectList(ViewBag.Technicians,
+                                 "TechnicianID", "Name"))"
+                    class="form-select">
+                <option value="">Select a technician...</option>
             </select>
         </div>
 
