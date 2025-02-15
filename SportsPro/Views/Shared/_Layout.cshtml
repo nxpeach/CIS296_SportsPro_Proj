@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@{
+    string controller =
+        ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string action =
+        ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -22,15 +28,29 @@
                 <nav class="collapse navbar-collapse" id="navbarSupportedContent">
                     @*Use shortened links.*@
             <div class="navbar-nav me-auto">
-                <a class="nav-item nav-link active" href="/">Home</a>
-                <a class="nav-item nav-link active" href="/products">Products</a>
-                <a class="nav-item nav-link active" href="/technicians">Technicians</a>
-                <a class="nav-item nav-link active" href="/customers">Customers</a>
-                <a class="nav-item nav-link active" href="/incidents">Incidents</a>
-                <a class="nav-item nav-link active" href="/registrations">Registrations</a>
+                        <a class="nav-item nav-link
+                      @(controller == "Home" && action == "Index" ? "active" : "")"
+                           asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-item nav-link
+                      @(controller == "Product" && action == "List" ? "active" : "")"
+                           asp-controller="Product" asp-action="List">Products</a>
+                        <a class="nav-item nav-link       
+                      @(controller == "Technician" && action == "List" ? "active" : "")"
+                        asp-controller="Technician" asp-action="List">Technicians</a>
+                        <a class="nav-item nav-link
+                      @(controller == "Customer" && action == "List" ? "active" : "")"
+                           asp-controller="Customer" asp-action="List">Customers</a>
+                        <a class="nav-item nav-link
+                      @(controller == "Incident" && action == "List" ? "active" : "")"
+                           asp-controller="Incident" asp-action="List">Incidents</a>
+                        <a class="nav-item nav-link
+                      @(controller == "Registration" && action == "List" ? "active" : "")"
+                           asp-controller="Registration" asp-action="List">Registrations</a>
             </div>
             <div class="navbar-nav ms-auto">
-                <a class="nav-item nav-link active" href="/about">About</a>
+                        <a class="nav-item nav-link
+                      @(controller == "Home" && action == "About" ? "active" : "")"
+                           asp-controller="Home" asp-action="About">About</a>
             </div>
         </nav>
             </div>
