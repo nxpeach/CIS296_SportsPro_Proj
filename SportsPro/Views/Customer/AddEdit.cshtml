@@ -2,7 +2,14 @@
 
 @{
     ViewData["Title"] = ViewBag.Action + " Customer";
+    Layout = "~/Views/Shared/_EditLayout.cshtml";
 }
+
+@section scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+
 @*Change heading depending on the action*@
 <h2>@ViewBag.Action Customer</h2>
 
@@ -38,12 +45,11 @@
     </div>
     <div class="form-group mb-3">
         <label asp-for="CountryID">Country</label>
-        <select asp-for="CountryID" class="form-control">
-            <option value="">Select a country</option>
-            @foreach (var country in ViewBag.Countries)
-            {
-                <option value="@country.CountryID">@country.Name</option>
-            }
+        <select asp-for="CountryID"
+                asp-items="@(new SelectList(ViewBag.Countries,
+                                 "CountryID", "Name"))"
+                class="form-select">
+            <option value="">Select a country...</option>
         </select>
     </div>
     <div class="form-group mb-3">

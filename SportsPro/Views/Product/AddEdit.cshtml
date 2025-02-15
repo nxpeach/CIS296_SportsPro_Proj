@@ -4,7 +4,12 @@
 @{
 	string title = ViewContext.RouteData.Values["action"].ToString().Equals("Add", StringComparison.OrdinalIgnoreCase) ? "Add Product" : "Edit Product"; //Change the title depending on the action
 	ViewBag.Title = title;
-	@*Layout = "~/Views/Shared/_Layout.cshtml";		need?*@ 
+	Layout = "~/Views/Shared/_EditLayout.cshtml"; 
+}
+
+@section scripts {
+	<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+	<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 }
 
 <h2>Add/Edit Product</h2>
