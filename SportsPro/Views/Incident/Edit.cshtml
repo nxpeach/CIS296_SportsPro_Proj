@@ -1,77 +1,65 @@
-﻿@model Incident
-
-
+﻿@using SportsPro.ViewModels
+@model IncidentAddEditViewModel
 @{
-    string title = ViewBag.Action + " Incident";
+    string title = Model.Action + " Incident";  // Changed from ViewBag.Action
     Layout = "~/Views/Shared/_EditLayout.cshtml";
 }
-
 @section scripts {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 }
-
 <h2>@title</h2>
 <form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="IncidentID" />
+    <input type="hidden" asp-for="Incident.IncidentID" />
     <div asp-validation-summary="All" class="text-danger"></div>
     <div class="row">
-
         <div class="form-group">
-            <label asp-for="CustomerID">Customer</label>
-            <select asp-for="CustomerID"
-                    asp-items="@(new SelectList(ViewBag.Customers,
+            <label asp-for="Incident.CustomerID">Customer</label>
+            <select asp-for="Incident.CustomerID"
+                    asp-items="@(new SelectList(Model.Customers,  @* Changed from ViewBag.Customers *@
                                  "CustomerID", "FullName"))"
                     class="form-select">
                 <option value="">Select a customer...</option>
             </select>
         </div>
-
         <div class="form-group">
-            <label asp-for="ProductID">Product</label>
-            <select asp-for="ProductID"
-                    asp-items="@(new SelectList(ViewBag.Products,
+            <label asp-for="Incident.ProductID">Product</label>
+            <select asp-for="Incident.ProductID"
+                    asp-items="@(new SelectList(Model.Products,  @* Changed from ViewBag.Products *@
                                  "ProductID", "Name"))"
                     class="form-select">
                 <option value="">Select a product...</option>
             </select>
         </div>
-        
-        <div class="form-group">
-            <label asp-for="Title">Title</label>
-            <input asp-for="Title" class="form-control" />
-        </div>
 
         <div class="form-group">
-            <label asp-for="Description">Description</label>
-            <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+            <label asp-for="Incident.Title">Title</label>
+            <input asp-for="Incident.Title" class="form-control" />
         </div>
-
         <div class="form-group">
-            <label asp-for="TechnicianID">Technician</label>
-            <select asp-for="TechnicianID"
-                    asp-items="@(new SelectList(ViewBag.Technicians,
+            <label asp-for="Incident.Description">Description</label>
+            <textarea asp-for="Incident.Description" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+            <label asp-for="Incident.TechnicianID">Technician</label>
+            <select asp-for="Incident.TechnicianID"
+                    asp-items="@(new SelectList(Model.Technicians,  @* Changed from ViewBag.Technicians *@
                                  "TechnicianID", "Name"))"
                     class="form-select">
                 <option value="">Select a technician...</option>
             </select>
         </div>
-
         <div class="form-group">
-            <label asp-for="DateOpened">Date Opened</label>
-            <input asp-for="DateOpened" class="form-control" />
+            <label asp-for="Incident.DateOpened">Date Opened</label>
+            <input asp-for="Incident.DateOpened" class="form-control" />
         </div>
-
         <div class="form-group">
-            <label asp-for="DateClosed">Date Closed</label>
-            <input asp-for="DateClosed" class="form-control" />
+            <label asp-for="Incident.DateClosed">Date Closed</label>
+            <input asp-for="Incident.DateClosed" class="form-control" />
         </div>
-
     </div>
-
     <div class="mt-2">
-        <button type="submit" class="btn btn-primary">@ViewBag.Action</button>
+        <button type="submit" class="btn btn-primary">@Model.Action</button>  @* Changed from ViewBag.Action *@
         <a asp-controller="Incident" asp-action="List" class="btn btn-primary">Cancel</a>
     </div>
-
 </form>
