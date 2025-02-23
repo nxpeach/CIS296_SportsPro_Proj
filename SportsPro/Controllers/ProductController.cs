@@ -15,14 +15,14 @@ namespace SportsPro.Controllers
 		}
 
 		[HttpGet]
-		public IActionResult Add()
+		public ViewResult Add()
 		{
 			ViewBag.Action = "Add";
 			return View("AddEdit", new Product());
 		}
 
 		[HttpGet]
-		public IActionResult Edit(int id)
+		public ViewResult Edit(int id)
 		{
 			ViewBag.Action = "Edit";
 			var product = context.Products.Find(id);
@@ -30,17 +30,19 @@ namespace SportsPro.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult Edit(Product product)
+		public RedirectToActionResult Edit(Product product)
 		{
 			if (ModelState.IsValid)
 			{
 				if (product.ProductID == 0)
 				{
 					context.Products.Add(product);
+					TempData["Message"] = $"{product.Name} was successfully added.";
 				}
 				else
 				{
 					context.Products.Update(product);
+					TempData["Message"] = $"{product.Name} was successfully edited.";
 				}
 				context.SaveChanges();
 				return RedirectToAction("List");
@@ -48,26 +50,28 @@ namespace SportsPro.Controllers
 			else
 			{
 				ViewBag.Action = (product.ProductID == 0) ? "Add" : "Edit";
-				return View("AddEdit", product);
+				return RedirectToAction("AddEdit", product);
 			}
 		}
 
 		[HttpGet]
-		public IActionResult Delete(int id)
+		public ViewResult Delete(int id)
 		{
 			var product = context.Products.Find(id);
 			if (product == null)
 			{
-				return RedirectToAction("List");  // or return NotFound();
+				return View("List");  // or return NotFound();
 			}
 			return View(product);
 		}
 
 		[HttpPost]
-		public IActionResult Delete(Product product)
+		public RedirectToActionResult Delete(Product product)
 		{
-			context.Products.Remove(product);
+            context.Products.Remove(product);
 			context.SaveChanges();
+
+			TempData["Message"] = "Product was successfully deleted.";
 			return RedirectToAction("List");
 		}
 

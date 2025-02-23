@@ -55,6 +55,12 @@
         </nav>
             </div>
         </nav>
+
+        @if(TempData.Keys.Contains("Message"))
+        {
+            <h4 class="bg-info text-white text-center p-2 rounded">@TempData["Message"]</h4>
+        }
+
     </header>
     <div class="container">
         <main role="main" class="pb-3">
