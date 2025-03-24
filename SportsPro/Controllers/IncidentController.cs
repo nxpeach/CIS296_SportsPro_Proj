@@ -127,22 +127,33 @@ namespace SportsPro.Controllers
             return RedirectToAction("List");
         }
 
-        [Route("/incidents")]
-        public IActionResult List()
+        [Route("/incidents/{filterString?}")]
+        public IActionResult List(string filterString = "all")
         {
-            var incidents = context.Incidents
+            //Create object
+            var filters = new Utilities.IncidentFilters(filterString);
+
+            //Start with all
+            IQueryable<Incident> query = context.Incidents
                 .Include(i => i.Customer)
                 .Include(i => i.Product)
-                .Include(i => i.Technician)
-                .ToList();
+                .Include(i => i.Technician);
+
+            //Apply filtering
+            query = Utilities.IncidentFilters.ApplyFilter(query, filters);
+
+            //Get final list
+            var incidents = query.ToList();
 
             var viewModel = new IncidentListViewModel
             {
                 Incidents = incidents,
-                Filter = "all"  // default filter
+                Filter = filterString
             };
 
-            return View(viewModel);  //Return the view model
+            ViewBag.Filters = filters;
+
+            return View(viewModel);
         }
     }
 }

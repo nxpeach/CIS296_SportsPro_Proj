@@ -1,11 +1,30 @@
-﻿@*@model List<SportsPro.Models.Incident>*@
-@model SportsPro.ViewModels.IncidentListViewModel
-
+﻿@model SportsPro.ViewModels.IncidentListViewModel
 @{
     ViewData["Title"] = "Incident Manager";
 }
-
 <h2>Incident Manager</h2>
+
+<!-- Bootstrap pills for filtering -->
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+        <a asp-action="List" asp-route-filterString="all"
+           class="nav-link @(ViewBag.Filters.IsAll ? "active" : "")">
+            All Incidents
+        </a>
+    </li>
+    <li class="nav-item">
+        <a asp-action="List" asp-route-filterString="unassigned"
+           class="nav-link @(ViewBag.Filters.IsUnassigned ? "active" : "")">
+            Unassigned Incidents
+        </a>
+    </li>
+    <li class="nav-item">
+        <a asp-action="List" asp-route-filterString="open"
+           class="nav-link @(ViewBag.Filters.IsOpen ? "active" : "")">
+            Open Incidents
+        </a>
+    </li>
+</ul>
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -36,5 +55,4 @@
         }
     </tbody>
 </table>
-
 <a asp-action="Add" class="btn btn-primary">Add Incident</a>
