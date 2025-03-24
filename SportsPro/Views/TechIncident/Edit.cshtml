@@ -1,0 +1,82 @@
+﻿@model SportsPro.Models.Incident
+
+<h1>Edit Incident</h1>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IncidentID" />
+    <input type="hidden" asp-for="CustomerID" />
+    <input type="hidden" asp-for="ProductID" />
+    <input type="hidden" asp-for="TechnicianID" />
+    <input type="hidden" asp-for="Title" />
+    <input type="hidden" asp-for="DateOpened" />
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label>Technician:</label>
+        </div>
+        <div class="col-md-10">
+            @Model.Technician?.Name
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label>Customer:</label>
+        </div>
+        <div class="col-md-10">
+            @(Model.Customer != null ? $"{Model.Customer.FirstName} {Model.Customer.LastName}" : "")
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label>Product:</label>
+        </div>
+        <div class="col-md-10">
+            @Model.Product?.Name
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label>Title:</label>
+        </div>
+        <div class="col-md-10">
+            @Model.Title
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label>Date Opened:</label>
+        </div>
+        <div class="col-md-10">
+            @Model.DateOpened?.ToShortDateString()
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label asp-for="Description">Description:</label>
+        </div>
+        <div class="col-md-10">
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label asp-for="DateClosed">Date Closed:</label>
+        </div>
+        <div class="col-md-10">
+            <input asp-for="DateClosed" class="form-control" type="date" />
+            <span asp-validation-for="DateClosed" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-controller="Technician" asp-action="GetTechnician" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>

@@ -1,85 +1,65 @@
-﻿using SportsPro.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+using SportsPro.Models;
+using SportsPro.ViewModels;
 
 namespace SportsPro.Controllers
 {
     public class TechnicianController : Controller
     {
-        private SportsProContext context { get; set; }
+        private readonly SportsProContext _context;
 
-        public TechnicianController(SportsProContext ctx)
+        public TechnicianController(SportsProContext context)
         {
-            context = ctx;
+            _context = context;
         }
 
         [HttpGet]
-        public IActionResult Add()
+        public IActionResult GetTechnician()
         {
-            ViewBag.Action = "Add";
-            return View("Edit", new Technician());
-        }
-
-        [HttpGet]
-        public IActionResult Edit(int id)
-        {
-            ViewBag.Action = "Edit";
-            var technician = context.Technicians.Find(id);
-            return View(technician);
-
+            var technicians = _context.Technicians.ToList();
+            var viewModel = new GetTechnicianViewModel
+            {
+                Technicians = technicians,
+                SelectedTechnicianID = 0
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
-        public IActionResult Edit(Technician technician)
+        public IActionResult ListIncidentsByTechnician(GetTechnicianViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            if (viewModel.SelectedTechnicianID == 0)
             {
-                if (technician.TechnicianID == 0)
-                {
-                    context.Technicians.Add(technician);
-                }
-                else
-                {
-                    context.Technicians.Update(technician);
-                }
-
-                context.SaveChanges();
-                return RedirectToAction("List");
-
+                ModelState.AddModelError("", "Please select a technician."); //Getting double error messages??
+                viewModel.Technicians = _context.Technicians.ToList(); //Repopulate the technicians list
+                return View("GetTechnician", viewModel);
             }
-            else
+            //Fetch the selected technician name
+            var technician = _context.Technicians
+                .FirstOrDefault(t => t.TechnicianID == viewModel.SelectedTechnicianID);
+            if (technician == null)
             {
-                ViewBag.Action = (technician.TechnicianID == 0) ? "Add" : "Edit";
-                return View(technician);
+                ModelState.AddModelError("SelectedTechnicianId", "Technician not found.");
+                viewModel.Technicians = _context.Technicians.ToList();
+                return View("GetTechnician", viewModel);
             }
+            //Fetch open incidents
+            var incidents = _context.Incidents
+                .Include(i => i.Customer)
+                .Include(i => i.Product)
+                .Where(i => i.TechnicianID == viewModel.SelectedTechnicianID && i.DateClosed == null) //Filter for open incidents
+                .ToList();
+            return View("IncidentsByTechnician", new IncidentsByTechnicianViewModel
+            {
+                TechnicianName = technician.Name,
+                Incidents = incidents
+            });
         }
 
-        [HttpGet]
-        public IActionResult Delete(int id)
+        public IActionResult SwitchTechnician()
         {
-            var technician = context.Technicians.Find(id);
-            return View(technician);
-        }
-
-        [HttpPost]
-        public IActionResult Delete(Technician technician)
-        {
-            context.Technicians.Remove(technician);
-            context.SaveChanges();
-            return RedirectToAction("List");
-        }
-
-        [Route("technicians")]
-        public IActionResult List()
-        {
-            var technicians = context.Technicians
-                              .Where(t => t.TechnicianID != -1) // Exclude the default technician
-                              .ToList();
-
-            return View(technicians);
+            return RedirectToAction("GetTechnician");
         }
     }
 }
