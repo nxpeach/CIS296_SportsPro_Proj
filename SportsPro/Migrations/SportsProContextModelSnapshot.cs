@@ -248,37 +248,45 @@ namespace SportsPro.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("CountryID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("CustomerID");
 
@@ -388,23 +396,27 @@ namespace SportsPro.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IncidentID"), 1L, 1);
 
-                    b.Property<int>("CustomerID")
+                    b.Property<int?>("CustomerID")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("DateClosed")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateOpened")
+                    b.Property<DateTime?>("DateOpened")
+                        .IsRequired()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProductID")
+                    b.Property<int?>("ProductID")
+                        .IsRequired()
                         .HasColumnType("int");
 
-                    b.Property<int>("TechnicianID")
+                    b.Property<int?>("TechnicianID")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -551,6 +563,21 @@ namespace SportsPro.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SportsPro.Models.Registration", b =>
+                {
+                    b.Property<int>("CustomerID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerID", "ProductID");
+
+                    b.HasIndex("ProductID");
+
+                    b.ToTable("Registrations");
+                });
+
             modelBuilder.Entity("SportsPro.Models.Technician", b =>
                 {
                     b.Property<int>("TechnicianID")
@@ -656,6 +683,25 @@ namespace SportsPro.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Technician");
+                });
+
+            modelBuilder.Entity("SportsPro.Models.Registration", b =>
+                {
+                    b.HasOne("SportsPro.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SportsPro.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Product");
                 });
 #pragma warning restore 612, 618
         }

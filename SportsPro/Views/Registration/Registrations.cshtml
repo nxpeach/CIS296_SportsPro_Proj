@@ -1,0 +1,52 @@
+﻿@model SportsPro.ViewModels.RegistrationsViewModel
+
+@{
+    ViewData["Title"] = "Registrations";
+}
+
+<h1>Customer: @Model.Customer.FullName</h1>
+<h2>Registrations</h2>
+
+@if (Model.CustomerProducts.Count == 0)
+{
+    <p>No products registered for this customer.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.CustomerProducts)
+            {
+                <tr>
+                    <td>@product.Name</td>
+                    <td>
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" name="productID" value="@product.ProductID" />
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h3>Register Product</h3>
+<form asp-action="Register" method="post">
+    <div class="form-group mb-3">
+        <select name="productID" class="form-select">
+            <option value="">Select a product</option>
+            @foreach (var product in Model.Products)
+            {
+                <option value="@product.ProductID">@product.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>

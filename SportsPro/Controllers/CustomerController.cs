@@ -100,24 +100,53 @@ namespace SportsPro.Controllers
         [HttpPost]
         public IActionResult Save(Customer customer)
         {
+            // Check for duplicate email ONLY when adding a new customer
+            if (customer.CustomerID == 0 && _context.Customers.Any(c => c.Email == customer.Email))
+            {
+                ModelState.AddModelError(nameof(customer.Email), "This email is already in use.");
+            }
+
             if (ModelState.IsValid)
             {
-                if (customer.CustomerID == 0) //If this is a new customer
+                if (customer.CustomerID == 0) // New customer
                 {
                     _context.Customers.Add(customer);
                 }
-                else //Update existing customer
+                else // Existing customer
                 {
                     _context.Customers.Update(customer);
                 }
                 _context.SaveChanges();
-                return RedirectToAction("List");    //Rerturn the list view
+                return RedirectToAction("List");
             }
-            ViewBag.Action = customer.CustomerID == 0 ? "Add" : "Edit"; //Get the correct page name
 
-            ViewBag.Countries = _context.Countries.ToList(); //Make sure countries are available if validation fails
+            // End here if there's a validation error
+            ViewBag.Action = customer.CustomerID == 0 ? "Add" : "Edit";
+            ViewBag.Countries = _context.Countries.ToList();
             return View("AddEdit", customer);
         }
+
+        //GET Customer/Select
+        [HttpGet]
+        public IActionResult Get()
+        {
+            ViewBag.Customers = _context.Customers.OrderBy(c => c.LastName).ToList();
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Get(int customerID)
+        {
+            if (customerID == 0)
+            {
+                TempData["ErrorMessage"] = "Please select a customer.";
+                return RedirectToAction("Get");
+            }
+
+            HttpContext.Session.SetInt32("CustomerID", customerID);
+            return RedirectToAction("Registrations");
+        }
+
 
     }
 }

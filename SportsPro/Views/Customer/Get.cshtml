@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Get Customer";
+}
+
+<h1>Get Customer</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form asp-action="Get" method="post">
+    <div class="form-group mb-3">
+        <label>Select Customer</label>
+        <select name="customerID" class="form-select">
+            <option value="">Select a customer</option>
+            @foreach (var customer in ViewBag.Customers)
+            {
+                <option value="@customer.CustomerID">@customer.FullName</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Select</button>
+</form>

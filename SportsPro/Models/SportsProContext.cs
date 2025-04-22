@@ -13,9 +13,13 @@ namespace SportsPro.Models
         public DbSet<Country> Countries { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
         public DbSet<Incident> Incidents { get; set; } = null!;
+        public DbSet<Registration> Registrations { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<Registration>().HasKey(r => new { r.CustomerID, r.ProductID });
+
             modelBuilder.Entity<Product>().HasData(
                 new Product
                 {

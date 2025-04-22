@@ -1,0 +1,5 @@
+/*Custom CSS for errors only*/
+.input-validation-error {
+    border: 2px solid #dc3545 !important; /* Red border */
+    background-color: #f8d7da !important; /* Light red background */
+}
