@@ -1,26 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using SportsPro.Data.Repositories;
+using SportsPro.Data.UnitOfWork;
 using SportsPro.Models;
 
 namespace SportsPro.Controllers
 {
     public class TechIncidentController : Controller
     {
-        private SportsProContext context { get; set; }
+        private readonly IUnitOfWork _unitOfWork;
 
-        public TechIncidentController(SportsProContext ctx)
+        public TechIncidentController(IUnitOfWork unitOfWork)
         {
-            context = ctx;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var incident = context.Incidents
-                .Include(i => i.Customer)
-                .Include(i => i.Product)
-                .Include(i => i.Technician)
-                .FirstOrDefault(i => i.IncidentID == id);
+            var options = new QueryOptions<Incident>
+            {
+                Includes = {
+                    i => i.Customer,
+                    i => i.Product,
+                    i => i.Technician
+                }
+            };
+            options.AddWhere(i => i.IncidentID == id);
+
+            var incident = _unitOfWork.Incidents.List(options).FirstOrDefault();
+
 
             if (incident == null)
             {
@@ -33,22 +41,18 @@ namespace SportsPro.Controllers
         [HttpPost]
         public IActionResult Edit(Incident incident)
         {
-            // Get the existing incident to update
-            var existingIncident = context.Incidents.Find(incident.IncidentID);
+            var existingIncident = _unitOfWork.Incidents.Get(incident.IncidentID);
 
             if (existingIncident == null)
             {
                 return RedirectToAction("GetTechnician", "Technician");
             }
 
-            // Update only description and date closed
             existingIncident.Description = incident.Description;
             existingIncident.DateClosed = incident.DateClosed;
 
-            // Save changes
-            context.SaveChanges();
+            _unitOfWork.Save();
 
-            // Go back to Technician selection
             return RedirectToAction("GetTechnician", "Technician");
         }
     }

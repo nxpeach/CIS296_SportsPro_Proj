@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SportsPro.Data.Repositories;
+using SportsPro.Data.UnitOfWork;
 using SportsPro.Models;
 using System.Linq;
 
@@ -6,134 +8,146 @@ namespace SportsPro.Controllers
 {
     public class CustomerController : Controller
     {
-        private readonly SportsProContext _context;
+        private readonly IRepository<Customer> _customerRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CustomerController(SportsProContext context)
+        public CustomerController(IRepository<Customer> customerRepo, IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _customerRepo = customerRepo;
+            _unitOfWork = unitOfWork;
         }
 
-        //GET Customer/List
+        // GET: /customers
         [Route("/customers")]
         public IActionResult List()
         {
-            var customers = _context.Customers.ToList();
+            var options = new QueryOptions<Customer>();  // No filters = get all
+            var customers = _customerRepo.List(options);
             return View(customers);
         }
 
-        //GET Customer/Add
+        // GET: Customer/Add
         [HttpGet]
         public IActionResult Add()
         {
             ViewBag.Action = "Add";
-            ViewBag.Countries = _context.Countries.ToList(); //Get countries for dropdown
+            ViewBag.Countries = _unitOfWork.Countries.List(new QueryOptions<Country>());
             return View("AddEdit", new Customer());
         }
 
-        //POST Customer/Add
+        // POST: Customer/Add
         [HttpPost]
         public IActionResult Add(Customer customer)
         {
             if (ModelState.IsValid)
             {
-                _context.Customers.Add(customer);
-                _context.SaveChanges();
+                _customerRepo.Insert(customer);
+                _unitOfWork.Save();
                 return RedirectToAction("List");
             }
-            ViewBag.Countries = _context.Countries.ToList(); //Get countries again if validation fails
+
+            ViewBag.Countries = _unitOfWork.Countries.List(new QueryOptions<Country>());
             return View(customer);
         }
 
+        // GET: Customer/Edit
         [HttpGet]
         public IActionResult Edit(int id)
         {
             ViewBag.Action = "Edit";
-            ViewBag.Countries = _context.Countries.ToList();
-            var customer = _context.Customers.Find(id);
-            if (customer == null)   //If there is no customer, return the not found response
-            {
+            ViewBag.Countries = _unitOfWork.Countries.List(new QueryOptions<Country>());
+
+            var customer = _customerRepo.Get(id);
+            if (customer == null)
                 return NotFound();
-            }
+
             return View("AddEdit", customer);
         }
 
-        //POST Customer/Edit/
+        // POST: Customer/Edit
         [HttpPost]
         public IActionResult Edit(Customer customer)
         {
             if (ModelState.IsValid)
             {
-                _context.Customers.Update(customer);
-                _context.SaveChanges();
+                _customerRepo.Update(customer);
+                _unitOfWork.Save();
                 return RedirectToAction("List");
             }
-            ViewBag.Countries = _context.Countries.ToList();
+
+            ViewBag.Countries = _unitOfWork.Countries.List(new QueryOptions<Country>());
             return View(customer);
         }
 
-        //GET Customer/Delete/
+        // GET: Customer/Delete
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var customer = _context.Customers.Find(id);
+            var customer = _customerRepo.Get(id);
             if (customer == null)
-            {
                 return NotFound();
-            }
+
             return View(customer);
         }
 
-        //POST Customer/Delete/
+        // POST: Customer/DeleteConfirmed
         [HttpPost]
         public IActionResult DeleteConfirmed(int id)
         {
-            var customer = _context.Customers.Find(id);
+            var customer = _customerRepo.Get(id);
             if (customer != null)
             {
-                _context.Customers.Remove(customer);
-                _context.SaveChanges();
+                _customerRepo.Delete(customer);
+                _unitOfWork.Save();
             }
+
             return RedirectToAction("List");
         }
 
-        //SAVE the new customer and add
+        // POST: Customer/Save (Unified Save for Add/Edit)
         [HttpPost]
         public IActionResult Save(Customer customer)
         {
-            // Check for duplicate email ONLY when adding a new customer
-            if (customer.CustomerID == 0 && _context.Customers.Any(c => c.Email == customer.Email))
+            var options = new QueryOptions<Customer>();
+            options.AddWhere(c => c.Email == customer.Email);
+            var existingCustomer = _customerRepo.List(options).FirstOrDefault();
+
+
+            if (customer.CustomerID == 0 && existingCustomer != null)
             {
                 ModelState.AddModelError(nameof(customer.Email), "This email is already in use.");
             }
 
             if (ModelState.IsValid)
             {
-                if (customer.CustomerID == 0) // New customer
+                if (customer.CustomerID == 0)
                 {
-                    _context.Customers.Add(customer);
+                    _customerRepo.Insert(customer);
                 }
-                else // Existing customer
+                else
                 {
-                    _context.Customers.Update(customer);
+                    _customerRepo.Update(customer);
                 }
-                _context.SaveChanges();
+
+                _unitOfWork.Save();
                 return RedirectToAction("List");
             }
 
-            // End here if there's a validation error
             ViewBag.Action = customer.CustomerID == 0 ? "Add" : "Edit";
-            ViewBag.Countries = _context.Countries.ToList();
+            ViewBag.Countries = _unitOfWork.Countries.List(new QueryOptions<Country>());
             return View("AddEdit", customer);
         }
 
-        //GET Customer/Select
+        // GET: Customer/Select
         [HttpGet]
         public IActionResult Get()
         {
-            ViewBag.Customers = _context.Customers.OrderBy(c => c.LastName).ToList();
+            var options = new QueryOptions<Customer> { OrderBy = c => c.LastName };
+            ViewBag.Customers = _customerRepo.List(options).ToList();
             return View();
         }
 
+        // POST: Customer/Select
         [HttpPost]
         public IActionResult Get(int customerID)
         {
@@ -146,7 +160,5 @@ namespace SportsPro.Controllers
             HttpContext.Session.SetInt32("CustomerID", customerID);
             return RedirectToAction("Registrations");
         }
-
-
     }
 }

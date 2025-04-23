@@ -41,10 +41,10 @@
         @foreach (var incident in Model.Incidents)
         {
             <tr>
-                <td>@incident.Title</td>
-                <td>@incident.Customer.FullName</td>
-                <td>@incident.Product.Name</td>
-                <td>@incident.DateOpened</td>
+                <td>@incident?.Title</td>
+                <td>@incident?.Customer?.FullName</td>
+                <td>@incident?.Product?.Name</td>
+                <td>@incident?.DateOpened</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@incident.IncidentID" class="btn btn-primary">Edit</a>
                 </td>

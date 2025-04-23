@@ -1,26 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using SportsPro.Data.Repositories;
 using SportsPro.Models;
 using SportsPro.ViewModels;
+using SportsPro.Data;
+using SportsPro.Data.UnitOfWork;
 
 namespace SportsPro.Controllers
 {
     public class TechnicianController : Controller
     {
-        private readonly SportsProContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public TechnicianController(SportsProContext context)
+        public TechnicianController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public IActionResult GetTechnician()
         {
-            var technicians = _context.Technicians.ToList();
             var viewModel = new GetTechnicianViewModel
             {
-                Technicians = technicians,
+                Technicians = _unitOfWork.Technicians.List(new QueryOptions<Technician>()).ToList(),
                 SelectedTechnicianID = 0
             };
             return View(viewModel);
@@ -31,25 +32,33 @@ namespace SportsPro.Controllers
         {
             if (viewModel.SelectedTechnicianID == 0)
             {
-                ModelState.AddModelError("", "Please select a technician."); //Getting double error messages??
-                viewModel.Technicians = _context.Technicians.ToList(); //Repopulate the technicians list
+                ModelState.AddModelError("", "Please select a technician.");
+                viewModel.Technicians = _unitOfWork.Technicians.List(new QueryOptions<Technician>()).ToList();
                 return View("GetTechnician", viewModel);
             }
-            //Fetch the selected technician name
-            var technician = _context.Technicians
-                .FirstOrDefault(t => t.TechnicianID == viewModel.SelectedTechnicianID);
+
+            var technician = _unitOfWork.Technicians.Get(viewModel.SelectedTechnicianID);
             if (technician == null)
             {
                 ModelState.AddModelError("SelectedTechnicianId", "Technician not found.");
-                viewModel.Technicians = _context.Technicians.ToList();
+                viewModel.Technicians = _unitOfWork.Technicians.List(new QueryOptions<Technician>()).ToList();
                 return View("GetTechnician", viewModel);
             }
-            //Fetch open incidents
-            var incidents = _context.Incidents
-                .Include(i => i.Customer)
-                .Include(i => i.Product)
-                .Where(i => i.TechnicianID == viewModel.SelectedTechnicianID && i.DateClosed == null) //Filter for open incidents
-                .ToList();
+
+            var options = new QueryOptions<Incident>
+            {
+                WhereClauses = {
+                    i => i.TechnicianID == viewModel.SelectedTechnicianID,
+                    i => i.DateClosed == null
+                },
+                Includes = {
+                    i => i.Customer,
+                    i => i.Product
+                }
+            };
+
+            var incidents = _unitOfWork.Incidents.List(options).ToList();
+
             return View("IncidentsByTechnician", new IncidentsByTechnicianViewModel
             {
                 TechnicianName = technician.Name,

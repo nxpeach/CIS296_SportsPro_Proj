@@ -1,18 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using SportsPro.Data.UnitOfWork;
 using SportsPro.Models;
 using SportsPro.ViewModels;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
+using SportsPro.Data.Repositories;
 
 namespace SportsPro.Controllers
 {
     public class RegistrationController : Controller
     {
-        //DbContext needed to be injected into the controller
-        private readonly SportsProContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public RegistrationController(SportsProContext context)
+        public RegistrationController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
@@ -23,7 +25,11 @@ namespace SportsPro.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            ViewBag.Customers = _context.Customers.OrderBy(c => c.LastName).ToList();
+            var options = new QueryOptions<Customer>
+            {
+                OrderBy = c => c.LastName
+            };
+            ViewBag.Customers = _unitOfWork.Customers.List(options).ToList();
             return View();
         }
 
@@ -46,15 +52,21 @@ namespace SportsPro.Controllers
             var customerID = HttpContext.Session.GetInt32("CustomerID");
             if (customerID == null) return RedirectToAction("Get");
 
-            var customer = _context.Customers.Find(customerID);
+            var customer = _unitOfWork.Customers.Get(customerID.Value);
             if (customer == null) return RedirectToAction("Get");
 
             var viewModel = new RegistrationsViewModel
             {
                 Customer = customer,
-                Products = _context.Products.OrderBy(p => p.Name).ToList(),
-                CustomerProducts = _context.Registrations
-                    .Where(r => r.CustomerID == customerID)
+                Products = _unitOfWork.Products
+                    .List(new QueryOptions<Product> { OrderBy = p => p.Name })
+                    .ToList(),
+                CustomerProducts = _unitOfWork.Registrations
+                    .List(new QueryOptions<Registration>
+                    {
+                        WhereClauses = { r => r.CustomerID == customerID.Value },
+                        Includes = { r => r.Product }
+                    })
                     .Select(r => r.Product)
                     .ToList()
             };
@@ -68,18 +80,24 @@ namespace SportsPro.Controllers
             var customerID = HttpContext.Session.GetInt32("CustomerID");
             if (customerID == null) return RedirectToAction("Get");
 
-            if (!_context.Registrations.Any(r => r.CustomerID == customerID && r.ProductID == productID))
+            var registrationOptions = new QueryOptions<Registration>();
+            registrationOptions.AddWhere(r => r.CustomerID == customerID.Value && r.ProductID == productID);
+
+            bool alreadyRegistered = _unitOfWork.Registrations.List(registrationOptions).Any();
+
+            if (!alreadyRegistered)
             {
-                _context.Registrations.Add(new Registration
+                _unitOfWork.Registrations.Insert(new Registration
                 {
                     CustomerID = customerID.Value,
                     ProductID = productID
                 });
-                _context.SaveChanges();
+                _unitOfWork.Save();
             }
 
             return RedirectToAction("Registrations");
         }
+
 
         [HttpPost]
         public IActionResult Delete(int productID)
@@ -87,13 +105,17 @@ namespace SportsPro.Controllers
             var customerID = HttpContext.Session.GetInt32("CustomerID");
             if (customerID == null) return RedirectToAction("Get");
 
-            var registration = _context.Registrations
-                .FirstOrDefault(r => r.CustomerID == customerID && r.ProductID == productID);
+            var registration = _unitOfWork.Registrations
+                .List(new QueryOptions<Registration>
+                {
+                    WhereClauses = { r => r.CustomerID == customerID.Value && r.ProductID == productID }
+                })
+                .FirstOrDefault();
 
             if (registration != null)
             {
-                _context.Registrations.Remove(registration);
-                _context.SaveChanges();
+                _unitOfWork.Registrations.Delete(registration);
+                _unitOfWork.Save();
             }
 
             return RedirectToAction("Registrations");

@@ -1,39 +1,37 @@
-﻿using SportsPro.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using SportsPro.Data.UnitOfWork;
+using SportsPro.Models;
 using SportsPro.ViewModels;
-
+using SportsPro.Utilities;
+using System.Linq;
+using SportsPro.Data.Repositories;
 
 namespace SportsPro.Controllers
 {
     public class IncidentController : Controller
     {
-        private SportsProContext context { get; set; }
+        private readonly IUnitOfWork _unitOfWork;
 
-        public IncidentController(SportsProContext ctx)
+        public IncidentController(IUnitOfWork unitOfWork)
         {
-            context = ctx;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
-        public IActionResult Add()  //Now using IncidentAddEditViewModel
+        public IActionResult Add()
         {
             var viewModel = new IncidentAddEditViewModel
             {
                 Action = "Add",
-                Customers = context.Customers
-                    .OrderBy(c => c.LastName)
-                    .ThenBy(c => c.FirstName)
+                Customers = _unitOfWork.Customers
+                    .List(new QueryOptions<Customer> { OrderBy = c => c.LastName, ThenOrderBy = c => c.FirstName })
                     .ToList(),
-                Products = context.Products
-                    .OrderBy(p => p.Name)
+                Products = _unitOfWork.Products
+                    .List(new QueryOptions<Product> { OrderBy = p => p.Name })
                     .ToList(),
-                Technicians = context.Technicians
-                    .OrderBy(t => t.Name)
+                Technicians = _unitOfWork.Technicians
+                    .List(new QueryOptions<Technician> { OrderBy = t => t.Name })
                     .ToList(),
                 Incident = new Incident { DateOpened = null }
             };
@@ -42,26 +40,23 @@ namespace SportsPro.Controllers
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)  //Now using IncidentAddEditViewModel
+        public IActionResult Edit(int id)
         {
-            var incident = context.Incidents.Find(id);
+            var incident = _unitOfWork.Incidents.Get(id);
             if (incident == null)
-            {
-                return NotFound(); //Return 404 if incident isn't found
-            }
+                return NotFound();
 
             var viewModel = new IncidentAddEditViewModel
             {
                 Action = "Edit",
-                Customers = context.Customers
-                    .OrderBy(c => c.LastName)
-                    .ThenBy(c => c.FirstName)
+                Customers = _unitOfWork.Customers
+                    .List(new QueryOptions<Customer> { OrderBy = c => c.LastName, ThenOrderBy = c => c.FirstName })
                     .ToList(),
-                Products = context.Products
-                    .OrderBy(p => p.Name)
+                Products = _unitOfWork.Products
+                    .List(new QueryOptions<Product> { OrderBy = p => p.Name })
                     .ToList(),
-                Technicians = context.Technicians
-                    .OrderBy(t => t.Name)
+                Technicians = _unitOfWork.Technicians
+                    .List(new QueryOptions<Technician> { OrderBy = t => t.Name })
                     .ToList(),
                 Incident = incident
             };
@@ -76,83 +71,72 @@ namespace SportsPro.Controllers
             {
                 if (incident.IncidentID == 0)
                 {
-                    context.Incidents.Add(incident);
+                    _unitOfWork.Incidents.Insert(incident);
                 }
                 else
                 {
-                    context.Incidents.Update(incident);
+                    _unitOfWork.Incidents.Update(incident);
                 }
-                context.SaveChanges();
+                _unitOfWork.Save();
                 return RedirectToAction("List");
             }
-            else
-            {  
-                //Create view model for invalid state
-                var viewModel = new IncidentAddEditViewModel
-                {
-                    Action = (incident.IncidentID == 0) ? "Add" : "Edit",
-                    Customers = context.Customers
-                        .OrderBy(c => c.LastName)
-                        .ThenBy(c => c.FirstName)
-                        .ToList(),
-                    Products = context.Products
-                        .OrderBy(p => p.Name)
-                        .ToList(),
-                    Technicians = context.Technicians
-                        .OrderBy(t => t.Name)
-                        .ToList(),
-                    Incident = incident
-                };
-                return View(viewModel);
-            }
+
+            var viewModel = new IncidentAddEditViewModel
+            {
+                Action = (incident.IncidentID == 0) ? "Add" : "Edit",
+                Customers = _unitOfWork.Customers
+                    .List(new QueryOptions<Customer> { OrderBy = c => c.LastName, ThenOrderBy = c => c.FirstName })
+                    .ToList(),
+                Products = _unitOfWork.Products
+                    .List(new QueryOptions<Product> { OrderBy = p => p.Name })
+                    .ToList(),
+                Technicians = _unitOfWork.Technicians
+                    .List(new QueryOptions<Technician> { OrderBy = t => t.Name })
+                    .ToList(),
+                Incident = incident
+            };
+            return View(viewModel);
         }
 
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var incident = context.Incidents
-                           .Include(i => i.Customer)  // Ensure that you are including the Customer data
-                           .FirstOrDefault(i => i.IncidentID == id);
+            var options = new QueryOptions<Incident>();
+            options.AddWhere(i => i.IncidentID == id);
+            options.AddInclude(i => i.Customer);
 
-           
-
+            var incident = _unitOfWork.Incidents.List(options).FirstOrDefault();
             return View(incident);
         }
 
         [HttpPost]
         public IActionResult Delete(Incident incident)
         {
-            context.Incidents.Remove(incident);
-            context.SaveChanges();
+            _unitOfWork.Incidents.Delete(incident);
+            _unitOfWork.Save();
             return RedirectToAction("List");
         }
 
         [Route("/incidents/{filterString?}")]
         public IActionResult List(string filterString = "all")
         {
-            //Create object
-            var filters = new Utilities.IncidentFilters(filterString);
+            var filters = new IncidentFilters(filterString);
 
-            //Start with all
-            IQueryable<Incident> query = context.Incidents
-                .Include(i => i.Customer)
-                .Include(i => i.Product)
-                .Include(i => i.Technician);
+            var options = new QueryOptions<Incident>();
+            options.AddInclude(i => i.Customer);
+            options.AddInclude(i => i.Product);
+            options.AddInclude(i => i.Technician);
 
-            //Apply filtering
-            query = Utilities.IncidentFilters.ApplyFilter(query, filters);
-
-            //Get final list
-            var incidents = query.ToList();
+            var query = _unitOfWork.Incidents.List(options);
+            query = IncidentFilters.ApplyFilter(query, filters);
 
             var viewModel = new IncidentListViewModel
             {
-                Incidents = incidents,
+                Incidents = query.ToList(),
                 Filter = filterString
             };
 
             ViewBag.Filters = filters;
-
             return View(viewModel);
         }
     }
